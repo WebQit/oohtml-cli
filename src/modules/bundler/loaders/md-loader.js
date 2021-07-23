@@ -35,7 +35,7 @@ export default function(resource, params, args, recieved, meta, next) {
         },
     });
     // --------------
-    var showdownParams = {metadata: true, extensions: [ fixLinksToReadme, fixRelativeUrls ]};
+    var showdownParams = {metadata: true, tables: true, extensions: [ fixLinksToReadme, fixRelativeUrls ]};
     if (args.code_highlighting) {
         showdownParams.extensions.push(ShowdownHighlight);
     }

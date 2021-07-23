@@ -22,7 +22,7 @@ const params = {
 // ------------------------------------------
 
 const commands = {
-    config: 'Starts a configuration processes.',
+    config: 'Configure an OOHTML CLI command.',
     bundle: cmd.bundler.desc.bundle,
 };
 
@@ -72,13 +72,14 @@ console.log('');
 
         case 'help':
         default:
-            Ui.title(`NAVIGATOR HELP`);
+            Ui.title(`OOHTML-CLI HELP`);
             Ui.log('');
             Ui.log(Ui.f`Say ${'oohtml'} <${'command'}>`);
             Ui.log('');
             Ui.log(Ui.f`Where <${'command'}> is one of:`);
             Ui.log(Ui.f`${commands}`);
             Ui.log('');
-            Ui.log(Ui.f`You may also refer to the OOHTML-CLI DOCS as ${'https://webqit.io/tooling/oohtml-cli'}`);
+            Ui.log(Ui.f`You may also refer to the OOHTML-CLI DOCS at ${'https://webqit.io/tooling/oohtml-cli'}`);
+            Ui.log('');
     }    
 })();

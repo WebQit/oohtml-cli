@@ -8,6 +8,7 @@ import _each from '@webqit/util/obj/each.js';
 import _merge from '@webqit/util/obj/merge.js'
 import _isObject from '@webqit/util/js/isObject.js';
 import _isNumeric from '@webqit/util/js/isNumeric.js';
+import _isString from '@webqit/util/js/isString.js';
 import _isFunction from '@webqit/util/js/isFunction.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
 import _before from '@webqit/util/str/before.js';
@@ -34,6 +35,21 @@ export default class Bundler {
 	 * @return string|object
 	 */
 	static async bundle(from, to = null, params = {}) {
+
+		if (_isString(from) && from.includes('[name]')) {
+			if (Path.isAbsolute(to) && !to.matches(/\[name\]/)) {
+				throw new Error('Cannot bubdle from multiple ENTRY_DIRs to the same OUTPUT_FILE without a [name] placeholder.');
+			}
+			var _from = from;
+			from = {};
+			Fs.readdirSync(_before(_from, '[name]')).forEach(name => {
+				var resource = _from.replace(/\[name\]/g, name);
+				if (Fs.statSync(resource).isDirectory() && !(params.IGNORE_FOLDERS_BY_PREFIX || []).filter(prfx => name.substr(0, prfx.length) === prfx).length) {
+					from[name] = resource;
+				}
+			});
+		}
+
 		if (_isObject(from)) {
 			var fromNames = Object.keys(from), bundles = {};
 
@@ -42,18 +58,21 @@ export default class Bundler {
 				if (!(name = fromNames.shift())) {
 					return;
 				}
-				var saveName = to ? to.replace(/\[name\]/g, name) : '';
-				var _params = {...params};
+				var _to = (to || '').replace(/\[name\]/g, name);
+				var _params = { ...params };
 				_params.ENTRY_DIR = from[name];
+				_params.ASSETS_STORAGE_BASE = (params.ASSETS_STORAGE_BASE || '').replace(/\[name\]/g, name);
+				_params.ASSETS_PUBLIC_BASE = (params.ASSETS_PUBLIC_BASE || '').replace(/\[name\]/g, name);
 				var bundler = await Bundler.readdir(from[name], _params);
-				bundles[name] = bundler.output(saveName);
+				bundles[name] = bundler.output(_to, _params.ASSETS_STORAGE_BASE);
 				await readShift();
 			};
 			await readShift();
 
 			return bundles;
 		}
-		return (await Bundler.readdir(from, params)).output(to);
+
+		return (await Bundler.readdir(from, params)).output(to, params.ASSETS_STORAGE_BASE);
 	}
 
 	/**
@@ -170,7 +189,8 @@ export default class Bundler {
 			var [ comment, tag ] = divideByComment(tag);
 			// --------------
 			var parts = Lexer.split(tag, '>', {limit: 1, blocks:[]});
-			return comment + parts[0] + ' ' + attributeName + '="' + attributeValue + '">' + parts[1];
+			var isSelfClosingTag = parts[0].trim().endsWith('/');
+			return comment + (isSelfClosingTag ? _beforeLast(parts[0], '/') : parts[0]) + ' ' + attributeName + '="' + attributeValue + '"' + (isSelfClosingTag ? ' /' : '') +  '>' + parts[1];
 		};
 		// -----------------------------------------
 		this.outline = {};
@@ -202,10 +222,12 @@ export default class Bundler {
 					var url = 'data:' + Bundler.mime[ext] + ';base64,' + Fs.readFileSync(file).toString('base64');
 				} else {
 					var absFilename = Path.join(assetsDir || this.baseDir, Path.basename(file));
-					Fs.mkdirSync(Path.dirname(absFilename), {recursive:true});
-					Fs.copyFileSync(file, absFilename);
+					if (assetsDir !== Path.resolve(this.baseDir)) {
+						Fs.mkdirSync(Path.dirname(absFilename), {recursive:true});
+						Fs.copyFileSync(file, absFilename);
+					}
 					var assetsPublicFilename = getPublicFilename(absFilename, params.indentation);
-					var url = params.ASSETS_PUBLIC_BASE + assetsPublicFilename;
+					var url = Path.join(params.ASSETS_PUBLIC_BASE, assetsPublicFilename);
 				}
 				var img = `<img src="${url}" />`;
 				return createExport(img, exportGroup);
@@ -224,23 +246,22 @@ export default class Bundler {
 	 * and optionally saves it to a Path.
 	 *
 	 * @param string			outputFile
+	 * @param string			assetsStorageBase
 	 * @param object			outline
 	 * @param string			name
 	 *
 	 * @return string
 	 */
-	output(outputFile = null, outline = {}, name = null) {
+	output(outputFile = null, assetsStorageBase = null, outline = {}, name = null) {
 		// -----------------------------------------
-		var outputFileExt, outputDir, src;
-		if (outputFile) {
-			if (!Path.isAbsolute(outputFile)) {
-				outputFile = Path.resolve(this.baseDir, outputFile);
-			}
-			if (!name && (outputFileExt = Path.extname(outputFile))) {
-				outputDir = Path.dirname(outputFile);
-			} else {
-				outputDir = Path.join(outputFile, name);
-			}
+		// The following will happen when not recursing by virtue of Path.isAbsolute()
+		if (outputFile && !Path.isAbsolute(outputFile)) {
+			outputFile = Path.resolve(this.baseDir, outputFile);
+		}
+		if (!assetsStorageBase) {
+			outpuassetsStorageBasetDir = Path.dirname(outputFile);
+		} else if (!Path.isAbsolute(assetsStorageBase)) {
+			assetsStorageBase = Path.resolve(this.baseDir, assetsStorageBase);
 		}
 		// -----------------------------------------
 		var t = "\t".repeat(this.params.indentation + 1),
@@ -252,17 +273,18 @@ export default class Bundler {
 					outline.subtree = {};
 				}
 				outline.subtree[name] = {};
-				return entry.output(outputDir, outline.subtree[name], name);
+				return entry.output(outputFile, Path.join(assetsStorageBase, name), outline.subtree[name], name);
 			}
 			if (!outline.meta) {
 				outline.meta = {};
 			}
 			outline.meta[name] = entry.meta;
-			return _isFunction(entry.content) ? entry.content(outputDir) : entry.content;
+			return _isFunction(entry.content) ? entry.content(assetsStorageBase) : entry.content;
 		}).join("\r\n\r\n" + t) + "\r\n" + t2;
 		// -----------------------------------------
-		if (outputFileExt) {
-			Fs.mkdirSync(outputDir, {recursive:true});
+		var src;
+		if (!name) {
+			Fs.mkdirSync(Path.dirname(outputFile), {recursive:true});
 			Fs.writeFileSync(outputFile, contents);
 			if (this.params.CREATE_OUTLINE_FILE) {
 				var outlineFile = outputFile + '.json';
@@ -275,7 +297,7 @@ export default class Bundler {
 		}
 		// -----------------------------------------
 		return `<template${
-				((this.params.TEMPLATE_ELEMENT || '').trim() ? ' is="' + this.params.TEMPLATE_ELEMENT + '"' : '') + (name ? ' ' + this.params.TEMPLATE_NAME_ATTR + '="' + name + '"' : '') + (src ? ' src="' + src + '"' : '')
+				((this.params.MODULE_EXT || '').trim() ? ' is="' + this.params.MODULE_EXT + '"' : '') + (name ? ' ' + this.params.MODULE_ID_ATTR + '="' + name + '"' : '') + (src ? ' src="' + src + '"' : '')
 			}>${(!src ? contents : '')}</template>`;
 	}	
 }

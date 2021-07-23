@@ -15,7 +15,7 @@ import * as bundler from '../config/bundler.js'
  * @description
  */
 export const desc = {
-    bundle: 'Creates the "partials" bundles.',
+    bundle: 'Bundle files from the current directory into HTML modules.',
 };
 
 /**
@@ -103,21 +103,7 @@ export async function bundle(Ui, flags = {}, params = {}) {
 		};
 	}
 
-	// -------------------------------
-	var ENTRY_DIR = config.ENTRY_DIR;
-	if (config.EXPLODE_ENTRY_DIR) {
-		if (Path.isAbsolute(config.OUTPUT_FILE) && !config.OUTPUT_FILE.matches(/\[name\]/)) {
-			throw new Error('OUTPUT_FILE format must be in template format; must contain a [name] placeholder.');
-		}
-		ENTRY_DIR = {};
-		Fs.readdirSync(config.ENTRY_DIR).forEach(name => {
-			var resource = Path.join(config.ENTRY_DIR, name);
-			if (Fs.statSync(resource).isDirectory() && !(config.IGNORE_FOLDERS_BY_PREFIX || []).filter(prfx => resource.substr(0, prfx.length) === prfx).length) {
-				ENTRY_DIR[name] = resource;
-			}
-		});
-	}
-	await Bundler.bundle(ENTRY_DIR, config.OUTPUT_FILE, config);
+	await Bundler.bundle(config.ENTRY_DIR, config.OUTPUT_FILE, config);
 	// -------------------------------
 
 	Ui.info('');
