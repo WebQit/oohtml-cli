@@ -3,7 +3,7 @@
 /**
  * imports
  */
-import _merge from '@webqit/util/obj/merge.js';
+import { _merge } from '@webqit/util/obj/index.js';
 import parseArgs from '@webqit/backpack/src/cli/parseArgs.js';
 import Ui from '@webqit/backpack/src/cli/Ui.js';
 import * as DotJson from '@webqit/backpack/src/dotfiles/DotJson.js';
@@ -22,7 +22,7 @@ const params = {
 // ------------------------------------------
 
 const commands = {
-    config: 'Configure an OOHTML CLI command.',
+    config: 'Configure an Play UI CLI command.',
     bundle: cmd.bundler.desc.bundle,
 };
 
@@ -72,14 +72,14 @@ console.log('');
 
         case 'help':
         default:
-            Ui.title(`OOHTML-CLI HELP`);
+            Ui.title(`Play UI CLI HELP`);
             Ui.log('');
-            Ui.log(Ui.f`Say ${'oohtml'} <${'command'}>`);
+            Ui.log(Ui.f`Say ${'playui'} <${'command'}>`);
             Ui.log('');
             Ui.log(Ui.f`Where <${'command'}> is one of:`);
             Ui.log(Ui.f`${commands}`);
             Ui.log('');
-            Ui.log(Ui.f`You may also refer to the OOHTML-CLI DOCS at ${'https://webqit.io/tooling/oohtml-cli'}`);
+            Ui.log(Ui.f`You may also refer to the Play UI CLI DOCS at ${'https://webqit.io/tooling/play-ui/docs/cli'}`);
             Ui.log('');
     }    
 })();

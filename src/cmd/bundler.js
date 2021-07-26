@@ -5,10 +5,8 @@
 import Fs from 'fs';
 import Url from 'url';
 import Path from 'path';
+import { _isString, _isObject, _isEmpty } from '@webqit/util/js/index.js';
 import Bundler from '../modules/bundler/Bundler.js';
-import _isString from '@webqit/util/js/isString.js';
-import _isObject from '@webqit/util/js/isObject.js';
-import _isEmpty from '@webqit/util/js/isEmpty.js';
 import * as bundler from '../config/bundler.js'
 
 /**

@@ -10,14 +10,14 @@
 
 *[OOHTML CLI](https://webqit.io/tooling/oohtml-cli)* is a Command-Line utility for OOHTML development.
 
-> [Visit project homepage](https://webqit.io/tooling/oohtml-cli).
+> [Visit project homepage](https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-command-line).
 
 ## Installation
 Install OOHTML-CLI globally via npm
 
 ```text
 $ npm i -g npm
-$ npm i -g @webqit/oohtml-cli
+$ npm i -g @webqit/playui-cli
 ```
 
 ## Commands

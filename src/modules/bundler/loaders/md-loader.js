@@ -7,9 +7,9 @@ import Path from 'path';
 import Showdown from 'showdown';
 import Jsdom from 'jsdom';
 import ShowdownHighlight from 'showdown-highlight';
-import _beforeLast from '@webqit/util/str/beforeLast.js';
-import _last from '@webqit/util/arr/last.js';
-import _merge from '@webqit/util/obj/merge.js';
+import { _beforeLast } from '@webqit/util/str/index.js';
+import { _last } from '@webqit/util/arr/index.js';
+import { _merge } from '@webqit/util/obj/index.js';
 
 export default function(resource, params, args, recieved, meta, next) {
     // Catch .md files

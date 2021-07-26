@@ -4,18 +4,10 @@
  */
 import Fs from 'fs';
 import Path from 'path';
-import _each from '@webqit/util/obj/each.js';
-import _merge from '@webqit/util/obj/merge.js'
-import _isObject from '@webqit/util/js/isObject.js';
-import _isNumeric from '@webqit/util/js/isNumeric.js';
-import _isString from '@webqit/util/js/isString.js';
-import _isFunction from '@webqit/util/js/isFunction.js';
-import _beforeLast from '@webqit/util/str/beforeLast.js';
-import _before from '@webqit/util/str/before.js';
-import _after from '@webqit/util/str/after.js';
-import _toTitle from '@webqit/util/str/toTitle.js';
-import _preceding from '@webqit/util/arr/preceding.js';
-import _following from '@webqit/util/arr/following.js';
+import { _each, _merge } from '@webqit/util/obj/index.js';
+import { _isObject, _isNumeric, _isString, _isFunction } from '@webqit/util/js/index.js';
+import { _before, _beforeLast, _after, _toTitle } from '@webqit/util/str/index.js';
+import { _preceding, _following } from '@webqit/util/arr/index.js';
 import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
